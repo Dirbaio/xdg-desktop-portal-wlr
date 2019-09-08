@@ -4,14 +4,15 @@
 #include <string.h>
 #include "xdpw.h"
 
-static const char interface_name[] = "org.freedesktop.impl.portal.Request";
+static const char interface_name[] = "org.freedesktop.impl.portal.Session";
 
 static int method_close(sd_bus_message *msg, void *data,
 		sd_bus_error *ret_error) {
 	int ret = 0;
+
 	// struct xdpw_request *req = data;
 	// TODO
-	printf("Request.Close\n");
+	printf("Session.Close\n");
 
 	sd_bus_message *reply = NULL;
 	ret = sd_bus_message_new_method_return(msg, &reply);
@@ -35,24 +36,24 @@ static const sd_bus_vtable request_vtable[] = {
 	SD_BUS_VTABLE_END
 };
 
-struct xdpw_request *request_create(sd_bus *bus, const char *object_path) {
-	struct xdpw_request *req = calloc(1, sizeof(struct xdpw_request));
+struct xdpw_session *session_create(sd_bus *bus, const char *object_path) {
+	struct xdpw_session *sess = calloc(1, sizeof(struct xdpw_session));
 
-	if (sd_bus_add_object_vtable(bus, &req->slot, object_path, interface_name,
+	if (sd_bus_add_object_vtable(bus, &sess->slot, object_path, interface_name,
 			request_vtable, NULL) < 0) {
-		free(req);
+		free(sess);
 		fprintf(stderr, "sd_bus_add_object_vtable failed: %s\n",
 			strerror(-errno));
 		return NULL;
 	}
 
-	return req;
+	return sess;
 }
 
-void request_destroy(struct xdpw_request *req) {
-	if (req == NULL) {
+void session_destroy(struct xdpw_session *sess) {
+	if (sess == NULL) {
 		return;
 	}
-	sd_bus_slot_unref(req->slot);
-	free(req);
+	sd_bus_slot_unref(sess->slot);
+	free(sess);
 }
